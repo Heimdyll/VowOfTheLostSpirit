@@ -1,0 +1,46 @@
+=============== 
+Unity generated
+===============
+Temp/
+Library/
+
+=====================================
+Visual Studio / MonoDevelop generated
+=====================================
+ExportedObj/
+obj/
+*.svd
+*.userprefs
+/*.csproj
+*.pidb
+*.suo
+/*.sln
+*.user
+*.unityproj
+*.booproj
+*.csproj
+
+============
+OS generated
+============
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+===========
+Build
+===========
+Bin/
+bin/
+
+===========
+DLL
+===========
+!*.dll
+!*.obj
+Assets/Resources/Models/Facades/Materials/pasted__pasted__pasted__pasted__pasted__pCube14_pasted__pasted__pasted__pasted__group91_pasted__pasted__pasted__group93_pasted__pasted__group97_pasted__group110_group238Mat.mat
+Assets/Resources/Models/Facades/Materials/pasted__pasted__pasted__pasted__pasted__pCube14_pasted__pasted__pasted__pasted__group91_pasted__pasted__pasted__group93_pasted__pasted__group97_pasted__group110_group238Mat.mat.meta
