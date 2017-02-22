@@ -6,6 +6,7 @@ public class PlayerController : MonoBehaviour {
 	float speed = 10f;
 	float RotateSpeed = 2f;
     private PlayerMotor motor;
+    private Animator anim;
 
     public float minJumpHeight;
     public float jumpHight;
@@ -15,6 +16,7 @@ public class PlayerController : MonoBehaviour {
     // Use this for initialization
     void Start () {
 		motor = GetComponent<PlayerMotor>();
+        anim = GetComponent<Animator>();
 	}
 	
 	// Update is called once per frame
@@ -33,6 +35,25 @@ public class PlayerController : MonoBehaviour {
 		float xRot = Input.GetAxisRaw("Mouse Y");
 		Vector3 CamRot = new Vector3(xRot,0f,0f)*RotateSpeed;
 		motor.RotateCamera(CamRot);
+
+        if (Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0)
+        {
+            anim.SetBool("isWalking", true);
+        } else
+        {
+            anim.SetBool("isWalking", false);
+        }
+
+        if (Input.GetKeyDown(KeyCode.J))
+        {
+            anim.SetTrigger("pickupObject");
+            anim.SetBool("isLifting", true);
+        }
+        else if (Input.GetKeyDown(KeyCode.K))
+        {
+            anim.SetTrigger("throwObject");
+            anim.SetBool("isLifting", false);
+        }
 
         /*
         if (grounded == true)
