@@ -15,6 +15,7 @@ public class PlayerController : MonoBehaviour {
     private Vector3 velocity;
     private Vector3 rotation;
     private Vector3 cameraRotation;
+    private GameObject pickedupParent;
     float jumpPressure;
     bool grounded;
 
@@ -23,6 +24,7 @@ public class PlayerController : MonoBehaviour {
         anim = GetComponent<Animator>();
         mainCamera = Camera.main.gameObject.GetComponent<Camera>();
         rb3d = GetComponent<Rigidbody>();
+        Debug.Log("hand_L?: " + transform.GetChild(2).GetChild(0).GetChild(0).GetChild(0).GetChild(1).GetChild(0).GetChild(0).GetChild(0).GetChild(0).gameObject.name);
     }
 	
 	// Update is called once per frame
@@ -47,6 +49,8 @@ public class PlayerController : MonoBehaviour {
         {
             anim.SetBool("isWalking", false);
         }
+
+      
 
         if (Input.GetKeyDown(KeyCode.J) && !anim.GetBool("isLifting"))
         {
@@ -109,6 +113,39 @@ public class PlayerController : MonoBehaviour {
         {
             mainCamera.transform.Rotate(-cameraRotation);
         }
+    }
+
+    void OnTriggerEnter(Collider col)
+    {
+        Debug.Log("Collider name: " + col.gameObject.name);
+
+        if (col.gameObject.tag == "Pickupable")
+        {
+            Debug.Log("I'm pickupable");
+            pickedupParent = col.transform.parent.gameObject;
+            col.gameObject.GetComponent<BoxCollider>().enabled = false;
+            //col.gameObject.GetComponent<Rigidbody>().useGravity = false;
+            col.gameObject.transform.SetParent(transform.GetChild(2).GetChild(0).GetChild(0).GetChild(0).GetChild(2).GetChild(0).GetChild(0).GetChild(0).GetChild(0).GetChild(0));
+            col.gameObject.transform.localPosition = Vector3.zero;
+            transform.GetChild(0).GetComponent<CapsuleCollider>().enabled = false;
+        }
+
+    }
+    
+    public void ThrowObject(int eventInt)
+    {
+        pickedupParent.transform.position = transform.GetChild(2).GetChild(0).GetChild(0).GetChild(0).GetChild(2).GetChild(0).GetChild(0).GetChild(0).GetChild(0).GetChild(0).position;
+        pickedupParent.transform.rotation = transform.GetChild(2).GetChild(0).GetChild(0).GetChild(0).GetChild(2).GetChild(0).GetChild(0).GetChild(0).GetChild(0).GetChild(0).rotation;
+        //Debug.Break();
+        transform.GetChild(2).GetChild(0).GetChild(0).GetChild(0).GetChild(2).GetChild(0).GetChild(0).GetChild(0).GetChild(0).GetChild(0).GetChild(0).SetParent(pickedupParent.transform);
+        pickedupParent.transform.GetChild(0).localEulerAngles = Vector3.zero;
+        //Debug.Break();
+        pickedupParent.GetComponent<Rigidbody>().AddForce(transform.forward*100, ForceMode.Impulse);
+        //pickedupParent.transform.GetChild(0).localEulerAngles.Set(0, 0, 0);
+    }
+    public void CheckForPickup(int eventInt)
+    {
+        transform.GetChild(0).gameObject.GetComponent<CapsuleCollider>().enabled = true;
     }
 
     public void DisableMovement(int eventInt)
