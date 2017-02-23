@@ -3,21 +3,27 @@ using System.Collections;
 [RequireComponent(typeof(PlayerMotor))]
 public class PlayerController : MonoBehaviour {
 
-	float speed = 10f;
-	float RotateSpeed = 2f;
-    private PlayerMotor motor;
-    private Animator anim;
-
     public float minJumpHeight;
     public float jumpHight;
+    public bool isThrowing;
+
+    float speed = 10f;
+	float RotateSpeed = 2f;
+    private Animator anim;
+    private Rigidbody rb3d;
+    private Camera mainCamera;
+    private Vector3 velocity;
+    private Vector3 rotation;
+    private Vector3 cameraRotation;
     float jumpPressure;
     bool grounded;
 
     // Use this for initialization
     void Start () {
-		motor = GetComponent<PlayerMotor>();
         anim = GetComponent<Animator>();
-	}
+        mainCamera = Camera.main.gameObject.GetComponent<Camera>();
+        rb3d = GetComponent<Rigidbody>();
+    }
 	
 	// Update is called once per frame
 	void Update () {
@@ -25,18 +31,16 @@ public class PlayerController : MonoBehaviour {
 		float zMov = Input.GetAxisRaw("Vertical");
 		Vector3 MovHorizontal = transform.right*xMov;
 		Vector3 MovVertical = transform.forward*zMov;
-		Vector3 velocity = (MovHorizontal+MovVertical).normalized*speed;
-		motor.Move(velocity);
-
+		velocity = (MovHorizontal+MovVertical).normalized*speed;
+		
 		float yRot = Input.GetAxisRaw("Mouse X");
-		Vector3 rot = new Vector3(0f, yRot, 0f) *RotateSpeed;
-		motor.Rotate(rot);
-
+		rotation = new Vector3(0f, yRot, 0f) *RotateSpeed;
+		
 		float xRot = Input.GetAxisRaw("Mouse Y");
-		Vector3 CamRot = new Vector3(xRot,0f,0f)*RotateSpeed;
-		motor.RotateCamera(CamRot);
+		cameraRotation = new Vector3(xRot,0f,0f)*RotateSpeed;
+		
 
-        if (Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0)
+        if (!isThrowing && (Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0))
         {
             anim.SetBool("isWalking", true);
         } else
@@ -44,12 +48,13 @@ public class PlayerController : MonoBehaviour {
             anim.SetBool("isWalking", false);
         }
 
-        if (Input.GetKeyDown(KeyCode.J))
+        if (Input.GetKeyDown(KeyCode.J) && !anim.GetBool("isLifting"))
         {
+            DisableMovement(0);
             anim.SetTrigger("pickupObject");
             anim.SetBool("isLifting", true);
         }
-        else if (Input.GetKeyDown(KeyCode.K))
+        else if (Input.GetKeyDown(KeyCode.K) && anim.GetBool("isLifting"))
         {
             anim.SetTrigger("throwObject");
             anim.SetBool("isLifting", false);
@@ -94,4 +99,25 @@ public class PlayerController : MonoBehaviour {
         grounded = false;
     }
 }*/
+    void FixedUpdate()
+    {
+        if (!isThrowing)
+            rb3d.MovePosition(transform.position + velocity * Time.fixedDeltaTime);
+
+        rb3d.MoveRotation(transform.rotation * Quaternion.Euler(rotation));
+        if (mainCamera != null)
+        {
+            mainCamera.transform.Rotate(-cameraRotation);
+        }
+    }
+
+    public void DisableMovement(int eventInt)
+    {
+        isThrowing = true;
+    }
+
+    public void EnableMovement(int eventInt)
+    {
+        isThrowing = false;
+    }
 }

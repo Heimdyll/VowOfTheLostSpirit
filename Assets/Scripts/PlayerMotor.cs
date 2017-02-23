@@ -7,15 +7,20 @@ public class PlayerMotor : MonoBehaviour {
 	private Vector3 rotation=Vector3.zero;
 	private Vector3 cameraRotation=Vector3.zero;
 	public GameObject cam;
-	// Use this for initialization
+    public bool isThrowing;
+    private Animator anim;
+
+    // Use this for initialization
 	void Start () {
 		rb=GetComponent<Rigidbody>();
+        anim = GetComponent<Animator>();
 	}
 	
 	// Update is called once per frame
 	void Update () {
 	
 	}
+
 	public void Move(Vector3 _velocity)
 	{
 		velocity = _velocity;
@@ -35,14 +40,10 @@ public class PlayerMotor : MonoBehaviour {
 	}
 	void PerformMovement()
 	{
-		rb.MovePosition(transform.position + velocity * Time.fixedDeltaTime);
+       
 	}
 	void PerformRotation()
 	{
-		rb.MoveRotation(transform.rotation*Quaternion.Euler(rotation));
-		if(cam != null)
-		{
-			cam.transform.Rotate(-cameraRotation);
-		}
+		
 	}
 }
