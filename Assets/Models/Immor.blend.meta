@@ -652,7 +652,7 @@ ModelImporter:
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.38265306
+      - time: 0.18707483
         functionName: CheckForPickup
         data: 
         objectReferenceParameter: {instanceID: 0}
