@@ -145,6 +145,13 @@ ModelImporter:
     7400008: Run
     7400010: Swim
     7400012: Walk
+    7400014: JumpAir
+    7400016: JumpCharge
+    7400018: JumpFalling
+    7400020: JumpGoingUp
+    7400022: JumpHighest
+    7400024: Land
+    7400026: Pickup
     9500000: //RootNode
     13700000: Cube
   materials:
