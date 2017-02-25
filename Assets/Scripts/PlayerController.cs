@@ -15,8 +15,10 @@ public class PlayerController : MonoBehaviour {
     private Vector3 velocity;
     private Vector3 rotation;
     private Vector3 cameraRotation;
+    private Vector3 cameraOriginalPos;
     private GameObject pickedupParent;
     float jumpPressure;
+    bool isWalking;
     public bool grounded = true;
 
     // Use this for initialization
@@ -24,6 +26,8 @@ public class PlayerController : MonoBehaviour {
         anim = GetComponent<Animator>();
         mainCamera = Camera.main.gameObject.GetComponent<Camera>();
         rb3d = GetComponent<Rigidbody>();
+
+        cameraOriginalPos = mainCamera.transform.localPosition;
         Debug.Log("hand_L?: " + transform.GetChild(2).GetChild(0).GetChild(0).GetChild(0).GetChild(1).GetChild(0).GetChild(0).GetChild(0).GetChild(0).gameObject.name);
     }
 
@@ -40,15 +44,20 @@ public class PlayerController : MonoBehaviour {
         rotation = new Vector3(0f, yRot, 0f) * RotateSpeed;
 
         float xRot = Input.GetAxisRaw("Mouse Y");
+        //Debug.Log(xRot);
         cameraRotation = new Vector3(xRot, 0f, 0f) * RotateSpeed;
 
 
         if (!isThrowing && (Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0))
         {
+            isWalking = true;
+            Camera.main.gameObject.GetComponent<CameraController>().playerMoving = true;
             anim.SetBool("isWalking", true);
         }
         else
         {
+            isWalking = false;
+            Camera.main.GetComponent<CameraController>().playerMoving = false;
             anim.SetBool("isWalking", false);
         }
 
@@ -56,14 +65,19 @@ public class PlayerController : MonoBehaviour {
 
         if (Input.GetKeyDown(KeyCode.J) && !anim.GetBool("isLifting"))
         {
-            DisableMovement(0);
+            //DisableMovement(0);
             //DisableThrow(0);
             anim.SetTrigger("pickupObject");
-            anim.SetBool("isLifting", true);
+            //anim.SetBool("isLifting", true);
         }
         else if (Input.GetKeyDown(KeyCode.K) && anim.GetBool("isLifting") && !isLifting)
         {
             anim.SetTrigger("throwObject");
+            anim.SetBool("isLifting", false);
+        }
+        else if (Input.GetKeyDown(KeyCode.L) && anim.GetBool("isLifting") && !isLifting)
+        {
+            anim.SetTrigger("dropObject");
             anim.SetBool("isLifting", false);
         }
 
@@ -118,13 +132,21 @@ public class PlayerController : MonoBehaviour {
     void FixedUpdate()
     {
         if (!isThrowing)
-            rb3d.MovePosition(transform.position + velocity * Time.fixedDeltaTime);
-
-        rb3d.MoveRotation(transform.rotation * Quaternion.Euler(rotation));
-        if (mainCamera != null)
         {
-            mainCamera.transform.Rotate(-cameraRotation);
+            rb3d.MovePosition(transform.position + velocity * Time.fixedDeltaTime);
         }
+
+        if (isWalking)
+        {
+            transform.rotation = (Quaternion.Lerp(transform.rotation, Quaternion.Euler(new Vector3(0f, mainCamera.transform.rotation.eulerAngles.y, 0f)), 1f));
+ //           rb3d.MoveRotation(Quaternion.Euler(0f, mainCamera.transform.rotation.eulerAngles.y, 0f));
+            mainCamera.transform.rotation = new Quaternion(0,0,0,0);
+            mainCamera.transform.localPosition = cameraOriginalPos;
+            mainCamera.transform.RotateAround(mainCamera.GetComponent<CameraController>().target.position, new Vector3(0, 1, 0), rotation.y);
+        }
+        else
+            mainCamera.transform.RotateAround(mainCamera.GetComponent<CameraController>().target.position, new Vector3(0,1,0), rotation.y);
+
     }
 
     void OnTriggerEnter(Collider col)
@@ -133,30 +155,50 @@ public class PlayerController : MonoBehaviour {
 
         if (col.gameObject.tag == "Pickupable")
         {
+
             Debug.Log("I'm pickupable");
+            anim.SetBool("isLifting", true);
             pickedupParent = col.transform.parent.gameObject;
             pickedupParent.transform.position += new Vector3(0, -5, 0);
             col.gameObject.GetComponent<BoxCollider>().enabled = false;
             //col.gameObject.GetComponent<Rigidbody>().useGravity = false;
             col.gameObject.transform.SetParent(transform.GetChild(2).GetChild(0).GetChild(0).GetChild(0).GetChild(2).GetChild(0).GetChild(0).GetChild(0).GetChild(0).GetChild(0));
             col.gameObject.transform.localPosition = Vector3.zero;
-            transform.GetChild(0).GetComponent<CapsuleCollider>().enabled = false;
+            //transform.GetChild(0).GetComponent<CapsuleCollider>().enabled = false;
         }
 
     }
     
     public void ThrowObject(int eventInt)
     {
-        transform.GetChild(2).GetChild(0).GetChild(0).GetChild(0).GetChild(2).GetChild(0).GetChild(0).GetChild(0).GetChild(0).GetChild(0).GetChild(0).GetComponent<BoxCollider>().enabled = true;
-        pickedupParent.transform.position = transform.GetChild(2).GetChild(0).GetChild(0).GetChild(0).GetChild(2).GetChild(0).GetChild(0).GetChild(0).GetChild(0).GetChild(0).position;
-        pickedupParent.transform.rotation = transform.GetChild(2).GetChild(0).GetChild(0).GetChild(0).GetChild(2).GetChild(0).GetChild(0).GetChild(0).GetChild(0).GetChild(0).rotation;
+        Transform pickedupTransform =   transform.GetChild(2).GetChild(0).GetChild(0).GetChild(0).GetChild(2).GetChild(0).GetChild(0).GetChild(0).GetChild(0).GetChild(0).GetChild(0);
+        Transform handTransform =       transform.GetChild(2).GetChild(0).GetChild(0).GetChild(0).GetChild(2).GetChild(0).GetChild(0).GetChild(0).GetChild(0).GetChild(0);
+        Debug.Log(handTransform.name);
+        pickedupTransform.GetComponent<BoxCollider>().enabled = true;
+        pickedupParent.transform.position = handTransform.position;
+        pickedupParent.transform.rotation = handTransform.rotation;
         //Debug.Break();
-        transform.GetChild(2).GetChild(0).GetChild(0).GetChild(0).GetChild(2).GetChild(0).GetChild(0).GetChild(0).GetChild(0).GetChild(0).GetChild(0).SetParent(pickedupParent.transform);
+        pickedupTransform.SetParent(pickedupParent.transform);
         pickedupParent.transform.GetChild(0).localEulerAngles = Vector3.zero;
         pickedupParent.transform.GetChild(0).localScale = Vector3.one;
         //Debug.Break();
-        pickedupParent.GetComponent<Rigidbody>().AddForce(transform.forward*100, ForceMode.Impulse);
+        pickedupParent.GetComponent<Rigidbody>().AddForce(transform.forward * 100, ForceMode.Impulse);
         //pickedupParent.transform.GetChild(0).localEulerAngles.Set(0, 0, 0);
+    }
+
+    public void DropObject(int eventInt)
+    {
+        Transform pickedupTransform = transform.GetChild(2).GetChild(0).GetChild(0).GetChild(0).GetChild(2).GetChild(0).GetChild(0).GetChild(0).GetChild(0).GetChild(0).GetChild(0);
+        Transform handTransform = transform.GetChild(2).GetChild(0).GetChild(0).GetChild(0).GetChild(2).GetChild(0).GetChild(0).GetChild(0).GetChild(0).GetChild(0);
+        Debug.Log(handTransform.name);
+        pickedupTransform.GetComponent<BoxCollider>().enabled = true;
+        pickedupParent.transform.position = handTransform.position;
+        pickedupParent.transform.rotation = handTransform.rotation;
+        //Debug.Break();
+        pickedupTransform.SetParent(pickedupParent.transform);
+        pickedupParent.transform.GetChild(0).localEulerAngles = Vector3.zero;
+        pickedupParent.transform.GetChild(0).localScale = Vector3.one;
+        //Debug.Break();
     }
 
     public void ActuallyJump(int eventInt)
@@ -177,7 +219,7 @@ public class PlayerController : MonoBehaviour {
 
     public void CheckForPickup(int eventInt)
     {
-        transform.GetChild(0).gameObject.GetComponent<CapsuleCollider>().enabled = true;
+        transform.GetChild(0).gameObject.GetComponent<CapsuleCollider>().enabled = !transform.GetChild(0).gameObject.GetComponent<CapsuleCollider>().enabled;
     }
 
     public void DisableMovement(int eventInt)
