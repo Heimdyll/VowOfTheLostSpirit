@@ -464,7 +464,7 @@ ModelImporter:
     - serializedVersion: 16
       name: Heavy_walk
       takeName: Heavy_walk
-      firstFrame: 9
+      firstFrame: 15
       lastFrame: 44
       wrapMode: 0
       orientationOffsetY: 0
